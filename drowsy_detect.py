@@ -29,8 +29,8 @@ def eye_aspect_ratio(eye):
 # blink and then a second constant for the number of consecutive
 # frames the eye must be below the threshold for to set off the
 # alarm
-EYE_AR_THRESH = 0.3
-EYE_AR_CONSEC_FRAMES = 24
+EYE_AR_THRESH = 0.28
+EYE_AR_CONSEC_FRAMES = 32
 
 #Load face cascade which will be used to draw a rectangle around detected faces.
 face_cascade = cv2.CascadeClassifier("haarcascades/haarcascade_frontalface_default.xml")
