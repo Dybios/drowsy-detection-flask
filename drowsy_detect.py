@@ -30,7 +30,10 @@ def eye_aspect_ratio(eye):
 # frames the eye must be below the threshold for to set off the
 # alarm
 EYE_AR_THRESH = 0.3
-EYE_AR_CONSEC_FRAMES = 48
+EYE_AR_CONSEC_FRAMES = 24
+
+#Load face cascade which will be used to draw a rectangle around detected faces.
+face_cascade = cv2.CascadeClassifier("haarcascades/haarcascade_frontalface_default.xml")
 
 # initialize the output frame and a lock used to ensure thread-safe
 # exchanges of the output frames (useful when multiple browsers/tabs
@@ -54,7 +57,7 @@ def detect_motion(frameCount):
 	# grab global references to the video stream, output frame, and
 	# lock variables
 	global vs, outputFrame, lock
-	width = 400;
+	width = 300;
 
 	# initialize the total number of frames
 	# read thus far
@@ -72,13 +75,21 @@ def detect_motion(frameCount):
 		frame = vs.read()
 		frame = imutils.resize(frame, width)
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-		rects = detector(gray, 0)
 		# grab the current timestamp and draw it on the frame
 		timestamp = datetime.datetime.now()
 		cv2.putText(frame, timestamp.strftime(
 			"%A %d %B %Y %I:%M:%S%p"), (10, frame.shape[0] - 10),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
+		#Detect facial points through detector function
+		rects = detector(gray, 0)
+
+		#Detect faces through haarcascade_frontalface_default.xml
+		face_rectangle = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+		#Draw rectangle around each face detected
+		for (x,y,w,h) in face_rectangle:
+			cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
 
 		# if the total number of frames has reached a sufficient
 		# number to construct a reasonable background model, then
@@ -128,7 +139,7 @@ def detect_motion(frameCount):
 						# draw an alarm on the frame
 						cv2.putText(frame, "DROWSINESS ALERT!", (10, 30),
 							cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-						print("DROWSY!!")
+						#print("DROWSY!!")
 				# otherwise, the eye aspect ratio is not below the blink
 				# threshold, so reset the counter and alarm
 				else:
@@ -138,7 +149,7 @@ def detect_motion(frameCount):
 				# draw the computed eye aspect ratio on the frame to help
 				# with debugging and setting the correct eye aspect ratio
 				# thresholds and frame counters
-				cv2.putText(frame, "EAR: {:.2f}".format(ear), ((width-30), 30),
+				cv2.putText(frame, "EAR: {:.2f}".format(ear), ((width-80), 30),
 					cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 2)
 
 		total += 1
